@@ -29,7 +29,8 @@ PROFILE = {
 }
 
 # Local image path (place the file in your project folder)
-PROFILE_IMAGE_PATH = "assets/headshot.jpg"
+PROFILE_IMAGE_URL = "https://github.com/timomotoyinbo/css_streamlit_2026/blob/bd7b86c49371331bb692ee606fe2c2326d3029dd/headshot.jpg"
+st.image(PROFILE_IMAGE_URL, caption="Timoo", use_container_width=True)
 
 # ----------------------------
 # Sidebar navigation
@@ -293,3 +294,4 @@ elif menu == "Contact":
     st.write(f"**Website:** {PROFILE['website']}")
     st.write(f"**LinkedIn:** {PROFILE['linkedin']}")
     st.write(f"**GitHub:** {PROFILE['github']}")
+
