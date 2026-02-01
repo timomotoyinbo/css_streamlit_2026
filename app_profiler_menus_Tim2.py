@@ -1,6 +1,50 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import os
+import re
+
+# ----------------------------
+# Helpers
+# ----------------------------
+def github_blob_to_raw(url: str) -> str:
+    """
+    Converts GitHub 'blob' URLs to 'raw.githubusercontent.com' URLs.
+    Works with links like:
+    https://github.com/user/repo/blob/branch/path/file.jpg
+    https://github.com/user/repo/blob/<commit>/path/file.jpg
+    """
+    if not url:
+        return url
+
+    # If user already provided a raw link, keep it
+    if "raw.githubusercontent.com" in url:
+        return url
+
+    # If user used ?raw=1, it should work too
+    if "github.com" in url and "raw=1" in url:
+        return url
+
+    m = re.search(r"github\.com/([^/]+)/([^/]+)/blob/([^/]+)/(.*)", url)
+    if m:
+        user, repo, ref, path = m.groups()
+        return f"https://raw.githubusercontent.com/{user}/{repo}/{ref}/{path}"
+
+    return url
+
+
+def get_profile_image_source() -> str:
+    """
+    Prefer local image if present, otherwise use GitHub raw.
+    """
+    local_path = "assets/headshot.jpg"
+    if os.path.exists(local_path):
+        return local_path
+
+    # Your current GitHub link (blob) converted to raw automatically
+    github_blob_url = "https://github.com/timomotoyinbo/css_streamlit_2026/blob/bd7b86c49371331bb692ee606fe2c2326d3029dd/headshot.jpg"
+    return github_blob_to_raw(github_blob_url)
+
 
 # ----------------------------
 # Page config
@@ -28,9 +72,7 @@ PROFILE = {
     "github": "https://github.com/timomotoyinbo",
 }
 
-# Local image path (place the file in your project folder)
-PROFILE_IMAGE_URL = "https://github.com/timomotoyinbo/css_streamlit_2026/blob/bd7b86c49371331bb692ee606fe2c2326d3029dd/headshot.jpg"
-st.image(PROFILE_IMAGE_URL, caption="Timoo", use_container_width=True)
+PROFILE_IMAGE_SOURCE = get_profile_image_source()
 
 # ----------------------------
 # Sidebar navigation
@@ -88,13 +130,15 @@ if menu == "Profile":
 
     with col1:
         try:
-            st.image(PROFILE_IMAGE_PATH, use_container_width=True)
+            st.image(PROFILE_IMAGE_SOURCE, use_container_width=True)
             st.markdown(
                 f"<div style='text-align:center; font-weight:600; margin-top:6px;'>{PROFILE['name']}</div>",
                 unsafe_allow_html=True,
             )
-        except Exception:
-            st.warning("Profile image not found. Add your photo at: assets/headshot.jpg")
+        except Exception as e:
+            st.warning("Profile image could not be loaded.")
+            st.caption(str(e))
+            st.caption("If using GitHub, make sure you are using a raw link or add ?raw=1.")
 
         st.markdown("### At a glance")
         st.write(f"**Institution:** {PROFILE['institution']}")
@@ -294,4 +338,3 @@ elif menu == "Contact":
     st.write(f"**Website:** {PROFILE['website']}")
     st.write(f"**LinkedIn:** {PROFILE['linkedin']}")
     st.write(f"**GitHub:** {PROFILE['github']}")
-
